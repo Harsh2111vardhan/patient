@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Medication & Appointment System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        section {
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 45%;
+        }
+        h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Patient Medication & Appointment System</h1>
+</header>
+
+<section class="container">
+    <div class="card">
+        <h2>Medication Details</h2>
+        <table id="medication-table">
+            <thead>
+                <tr>
+                    <th>Medication</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Medication rows will be inserted here -->
+            </tbody>
+        </table>
+        <h3>Add Medication</h3>
+        <input type="text" placeholder="Medication Name" id="med-name">
+        <input type="text" placeholder="Dosage" id="med-dosage">
+        <input type="text" placeholder="Frequency" id="med-frequency">
+        <button onclick="addMedication()">Add Medication</button>
+    </div>
+
+    <div class="card">
+        <h2>Upcoming Appointments</h2>
+        <table id="appointment-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Appointment rows will be inserted here -->
+            </tbody>
+        </table>
+        <h3>Add Appointment</h3>
+        <input type="text" placeholder="Doctor's Name" id="doctor-name">
+        <input type="date" id="appointment-date">
+        <input type="time" id="appointment-time">
+        <button onclick="addAppointment()">Add Appointment</button>
+    </div>
+</section>
+
+<script>
+// Function to load data from the backend (get all medications and appointments)
+function loadData() {
+    // Fetch medications and appointments from the backend
+    fetch('http://localhost:5000/api/medications')
+        .then(response => response.json())
+        .then(medications => {
+            const medTable = document.getElementById('medication-table').getElementsByTagName('tbody')[0];
+            medications.forEach(med => {
+                let row = medTable.insertRow();
+                row.insertCell(0).textContent = med.name;
+                row.insertCell(1).textContent = med.dosage;
+                row.insertCell(2).textContent = med.frequency;
+            });
+        });
+
+    fetch('http://localhost:5000/api/appointments')
+        .then(response => response.json())
+        .then(appointments => {
+            const appTable = document.getElementById('appointment-table').getElementsByTagName('tbody')[0];
+            appointments.forEach(app => {
+                let row = appTable.insertRow();
+                row.insertCell(0).textContent = app.doctor;
+                row.insertCell(1).textContent = app.date;
+                row.insertCell(2).textContent = app.time;
+            });
+        });
+}
+
+// Add new medication
+function addMedication() {
+    const name = document.getElementById('med-name').value;
+    const dosage = document.getElementById('med-dosage').value;
+    const frequency = document.getElementById('med-frequency').value;
+
+    if (name && dosage && frequency) {
+        const medication = { name, dosage, frequency };
+
+        // Send data to the backend via POST request
+        fetch('http://localhost:5000/api/medications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(medication)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Medication added:', data);
+
+            // Add new row to the table
+            const medTable = document.getElementById('medication-table').getElementsByTagName('tbody')[0];
+            let row = medTable.insertRow();
+            row.insertCell(0).textContent = name;
+            row.insertCell(1).textContent = dosage;
+            row.insertCell(2).textContent = frequency;
+
+            // Clear input fields
+            document.getElementById('med-name').value = '';
+            document.getElementById('med-dosage').value = '';
+            document.getElementById('med-frequency').value = '';
+        })
+        .catch(error => {
+            console.error('Error adding medication:', error);
+        });
+    } else {
+        alert('Please fill in all fields.');
+    }
+}
+
+// Add new appointment
+function addAppointment() {
+    const doctor = document.getElementById('doctor-name').value;
+    const date = document.getElementById('appointment-date').value;
+    const time = document.getElementById('appointment-time').value;
+
+    if (doctor && date && time) {
+        const appointment = { doctor, date, time };
+
+        // Send data to the backend via POST request
+        fetch('http://localhost:5000/api/appointments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(appointment)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Appointment added:', data);
+
+            // Add new row to the table
+            const appTable = document.getElementById('appointment-table').getElementsByTagName('tbody')[0];
+            let row = appTable.insertRow();
+            row.insertCell(0).textContent = doctor;
+            row.insertCell(1).textContent = date;
+            row.insertCell(2).textContent = time;
+
+            // Clear input fields
+            document.getElementById('doctor-name').value = '';
+            document.getElementById('appointment-date').value = '';
+            document.getElementById('appointment-time').value = '';
+        })
+        .catch(error => {
+            console.error('Error adding appointment:', error);
+        });
+    } else {
+        alert('Please fill in all fields.');
+    }
+}
+
+// Initial data load
+window.onload = loadData;
+</script>
+
+</body>
+</html>
